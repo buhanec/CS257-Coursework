@@ -7,7 +7,7 @@ MACLIBS=-lm -framework OpenGL -framework GLUT
 all: linux
 
 linux:
-	$(CC) -o cs257 -O2 -msse3 -fopenmp cs257.c $(LIBS) -std=c99
+	$(CC) -o cs257 -g -O2 -msse3 -fopenmp cs257.c $(LIBS) -std=c99
 
 apple:
-	$(CC) -o cs257 -O2 -msse3 -fopenmp cs257.c $(MACLIBS) -std=c99
+	$(CC) -o cs257 -g -O2 -msse3 -fopenmp cs257.c $(MACLIBS) -std=c99

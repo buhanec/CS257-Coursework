@@ -19,11 +19,9 @@ void compute() {
 
 	// Loop 0.
 	t0 = wtime();
-	for (int i = 0; i < N; i++) {
-		ax[i] = 0.0f;
-		ay[i] = 0.0f;
-		az[i] = 0.0f;
-	}
+    memset(ax,0, sizeof(float)*N);
+    memset(ay,0, sizeof(float)*N);
+    memset(az,0, sizeof(float)*N);
 	t1 = wtime();
 	l0 += (t1 - t0);
 

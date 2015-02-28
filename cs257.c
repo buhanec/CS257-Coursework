@@ -227,6 +227,8 @@ void verify() {
 	}
 	printf(" Answer = 86672752.000000 (1000 1000)\n");
     printf(" Answer = 1349568.750000 (100 100)\n");
+    printf(" Answer = 84010864.000000 (1000 100)\n");
+    printf(" Answer = 452998176.000000 (10000 10)\n");
 	printf(" Answer = %f\n", phi);
 
 }

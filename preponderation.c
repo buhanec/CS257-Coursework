@@ -1,3 +1,5 @@
+#include <immintrin.h>
+
     // Preponderation
     float factor = dmp * dt;
     int V = (N/4)*4;

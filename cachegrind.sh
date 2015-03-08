@@ -1,1 +1,1 @@
-valgrind --tool=cachegrind ./cs257 100 100 0
+valgrind --tool=cachegrind ./cs257 $1 $2 0

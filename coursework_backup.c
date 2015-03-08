@@ -128,6 +128,7 @@ void compute() {
         _mm_store_ss(ax+i, sx2_);
         _mm_store_ss(ay+i, sy2_);
         _mm_store_ss(az+i, sz2_);
+
         //*/
         /*
         for (; j < N; j++) {

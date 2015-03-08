@@ -113,21 +113,18 @@ void compute() {
                    sz_ = _mm_add_ps(mz_, sz_);
 
         }
-        //__m128 ax_ = _mm_load1_ps(ax+i);
-        //__m128 ay_ = _mm_load1_ps(ay+i);
-        //__m128 az_ = _mm_load1_ps(az+i);
+        __m128 ax_ = _mm_load1_ps(ax+i);
+        __m128 ay_ = _mm_load1_ps(ay+i);
+        __m128 az_ = _mm_load1_ps(az+i);
         __m128 sx1_ = _mm_add_ps(sx_, _mm_movehl_ps(sx_, sx_));
         __m128 sx2_ = _mm_add_ps(sx1_, _mm_shuffle_ps(sx1_, sx1_, 1));
         __m128 sy1_ = _mm_add_ps(sy_, _mm_movehl_ps(sy_, sy_));
         __m128 sy2_ = _mm_add_ps(sy1_, _mm_shuffle_ps(sy1_, sy1_, 1));
         __m128 sz1_ = _mm_add_ps(sz_, _mm_movehl_ps(sz_, sz_));
         __m128 sz2_ = _mm_add_ps(sz1_, _mm_shuffle_ps(sz1_, sz1_, 1));
-        //_mm_store_ss(ax+i, _mm_add_ss(ax_, sx2_));
-        //_mm_store_ss(ay+i, _mm_add_ss(ay_, sy2_));
-        //_mm_store_ss(az+i, _mm_add_ss(az_, sz2_));
-        _mm_store_ss(ax+i, sx2_);
-        _mm_store_ss(ay+i, sy2_);
-        _mm_store_ss(az+i, sz2_);
+        _mm_store_ss(ax+i, _mm_add_ss(ax_, sx2_));
+        _mm_store_ss(ay+i, _mm_add_ss(ay_, sy2_));
+        _mm_store_ss(az+i, _mm_add_ss(az_, sz2_));
         //*/
         /*
         for (; j < N; j++) {

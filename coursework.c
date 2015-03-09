@@ -9,13 +9,12 @@ __m128 _mm_hsum_ps(__m128 a) {
 }
 
 void compute() {
-    // Preponderation
+    // Preponderationing
     float factor = dmp * dt;
     int V = (N/4)*4;
-    int B = N/4;
-    int i, j, k, l;
+    int i, j;
 
-    // packaged floats
+    // Packed preponderationing
     __m128 dmp_ = _mm_load1_ps(&dmp);
     __m128 dt_ = _mm_load1_ps(&dt);
     __m128 eps_ = _mm_load1_ps(&eps);
@@ -26,81 +25,59 @@ void compute() {
     __m128 negone_ = _mm_set1_ps(-1.0f);
     __m128 half_ = _mm_set1_ps(0.5f);
     __m128 three_ = _mm_set1_ps(3.0f);
-    __m128 fsign_ = _mm_castsi128_ps(_mm_set1_epi32(0x80000000));
 
-
+    // Timers
     double t0, t1;
 
-    // Loop 0.
-    t0 = wtime();
-    /*
-    for (i = 0; i < V; i += 4) {
-        _mm_store_ps(ax+i, zero_);
-    }
-    for (i = 0; i < V; i += 4) {
-        _mm_store_ps(ay+i, zero_);
-    }
-    for (i = 0; i < V; i += 4) {
-        _mm_store_ps(az+i, zero_);
-    }
-    for (; i < N; i++) {
-        _mm_store_ss(ax+i, zero_);
-        _mm_store_ss(ay+i, zero_);
-        _mm_store_ss(az+i, zero_);
-    }
-    */
-    t1 = wtime();
-    l0 += (t1 - t0);
-
-    // Loop 1.
+    // Acceleration and velocity loop
     t0 = wtime();
     #pragma omp parallel for
     for (int i = 0; i < N; i++) {
+        // prep x
         __m128 xi_ = _mm_load1_ps(x+i);
-        __m128 yi_ = _mm_load1_ps(y+i);
-        __m128 zi_ = _mm_load1_ps(z+i);
         __m128 sx_ = zero_;
+        // prep y
+        __m128 yi_ = _mm_load1_ps(y+i);
         __m128 sy_ = zero_;
+        // prep z
+        __m128 zi_ = _mm_load1_ps(z+i);
         __m128 sz_ = zero_;
+        // the nasty part
         for (j = 0; j < V; j += 4) {
-            // Square x diff
-            __m128 xj_ = _mm_load_ps(x+j);
-            __m128 rx_ = _mm_sub_ps(xj_, xi_);
+            // rx/x2
+            __m128 rx_ = _mm_load_ps(x+j);
+                   rx_ = _mm_sub_ps(rx_, xi_);
             __m128 r2_ = _mm_mul_ps(rx_, rx_);
-            // Start adding r2
+            // r2 start
                    r2_ = _mm_add_ps(r2_, eps_);
-            // Square y diff
-            __m128 yj_ = _mm_load_ps(y+j);
-            __m128 ry_ = _mm_sub_ps(yj_, yi_);
+            // ry/y2
+            __m128 ry_ = _mm_load_ps(y+j);
+                   ry_ = _mm_sub_ps(ry_, yi_);
             __m128 y2_ = _mm_mul_ps(ry_, ry_);
-            // Continue adding r2
+            // r2 con
                    r2_ = _mm_add_ps(y2_, r2_);
-            // Square z diff
-            __m128 zj_ = _mm_load_ps(z+j);
-            __m128 rz_ = _mm_sub_ps(zj_, zi_);
+            //rz/z2
+            __m128 rz_ = _mm_load_ps(z+j);
+                   rz_ = _mm_sub_ps(rz_, zi_);
             __m128 z2_ = _mm_mul_ps(rz_, rz_);
-            // Finish adding r2
+            // r2 fin
                    r2_ = _mm_add_ps(z2_, r2_);
-            // Load mj
-            __m128 mj_ = _mm_load_ps(m+j);
-            // Fast inverse
-            __m128 r2inv_ = _mm_rsqrt_ps(r2_);
-            // Newton-Phelps + fast inverse
-            //__m128 inv_ = _mm_rsqrt_ps(r2_);
-            //__m128 top_ = _mm_mul_ps(_mm_mul_ps(r2_, inv_), inv_);
-            //__m128 r2inv_ = _mm_mul_ps(_mm_mul_ps(half_, inv_), _mm_sub_ps(three_, top_));
+            // s start
+            __m128 s_ = _mm_load_ps(m+j);
+            // Fast inverse - source of error
+            //__m128 r2inv_ = _mm_rsqrt_ps(r2_);
+            // Newton-Raphson step - source of error
+            //__m128 top_ = _mm_mul_ps(_mm_mul_ps(r2_, r2inv_), r2inv_);
+            //__m128 r2inv_ = _mm_mul_ps(_mm_mul_ps(half_, r2inv_), _mm_sub_ps(three_, top_));
             // Accurate inverse square root
-            //__m128 r2inv_ = _mm_div_ps(one_, _mm_sqrt_ps(r2_))
-            __m128 r2inv2_ = _mm_mul_ps(r2inv_, r2inv_);
-            __m128 r6inv_ = _mm_mul_ps(r2inv2_, r2inv_);
-            __m128 s_ = _mm_mul_ps(mj_, r6inv_);
-            // IF WE WANT TO SKIP LOOP 2:
-            // More accurate
-            //       s_ = _mm_mul_ps(dt_, s_);
-            //       s_ = _mm_mul_ps(dmp_, s_);
-            // More approximate
-            //       s_ = _mm_mul_ps(factor_, s_);
-            // ENDIF
+            __m128 r2inv_ = _mm_div_ps(one_, _mm_sqrt_ps(r2_));
+            // r6inv
+            __m128 r6inv_ = _mm_mul_ps(_mm_mul_ps(r2inv_, r2inv_), r2inv_);
+            // s fin
+                   s_ = _mm_mul_ps(s_, r6inv_);
+            // Directly calculate velocity - source of error
+            //       s_  = _mm_mul_ps(factor_, s_);
+            // Calculate results
             __m128 mx_ = _mm_mul_ps(s_, rx_);
                    sx_ = _mm_add_ps(mx_, sx_);
             __m128 my_ = _mm_mul_ps(s_, ry_);
@@ -109,30 +86,22 @@ void compute() {
                    sz_ = _mm_add_ps(mz_, sz_);
 
         }
+        // Horizontal sum - source of error
+        //__m128 vx_  = _mm_load1_ps(vx+i);
+        //       sx_  = _mm_add_ps(sx_, vx_);
         __m128 sx1_ = _mm_add_ps(sx_, _mm_movehl_ps(sx_, sx_));
         __m128 sx2_ = _mm_add_ps(sx1_, _mm_shuffle_ps(sx1_, sx1_, 1));
+        _mm_store_ss(ax+i, sx2_);
+        //__m128 vy_  = _mm_load1_ps(vy+i);
+        //       sy_  = _mm_add_ps(sy_, vy_);
         __m128 sy1_ = _mm_add_ps(sy_, _mm_movehl_ps(sy_, sy_));
         __m128 sy2_ = _mm_add_ps(sy1_, _mm_shuffle_ps(sy1_, sy1_, 1));
+        _mm_store_ss(ay+i, sy2_);
+        //__m128 vz_  = _mm_load1_ps(vz+i);
+        //       sz_  = _mm_add_ps(sz_, vz_);
         __m128 sz1_ = _mm_add_ps(sz_, _mm_movehl_ps(sz_, sz_));
         __m128 sz2_ = _mm_add_ps(sz1_, _mm_shuffle_ps(sz1_, sz1_, 1));
-        _mm_store_ss(ax+i, sx2_);
-        _mm_store_ss(ay+i, sy2_);
         _mm_store_ss(az+i, sz2_);
-        //*/
-        /*
-        for (; j < N; j++) {
-            float rx = x[j] - x[i];
-            float ry = y[j] - y[i];
-            float rz = z[j] - z[i];
-            float r2 = rx*rx + ry*ry + rz*rz + eps;
-            float r2inv = 1.0f / sqrt(r2);
-            float r6inv = r2inv * r2inv * r2inv;
-            float s = m[j] * r6inv;
-            ax[i] += s * rx;
-            ay[i] += s * ry;
-            az[i] += s * rz;
-        }
-        */
     }
 
     t1 = wtime();

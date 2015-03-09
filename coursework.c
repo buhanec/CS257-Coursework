@@ -8,6 +8,10 @@ __m128 _mm_hsum_ps(__m128 a) {
     return _mm_add_ps(b, _mm_shuffle_ps(b, b, 1));
 }
 
+// prior to merging loops l0 had 30-40% cache misses
+// after removing l0 and further optimising l1, l3+4 had 80% of the cache
+// misses, mostly stemming from comparisons
+
 void compute() {
     // Preponderationing
     float factor = dmp * dt;
@@ -65,12 +69,12 @@ void compute() {
             // s start
             __m128 s_ = _mm_load_ps(m+j);
             // Fast inverse - source of error
-            //__m128 r2inv_ = _mm_rsqrt_ps(r2_);
+            __m128 r2inv_ = _mm_rsqrt_ps(r2_);
             // Newton-Raphson step - source of error
             //__m128 top_ = _mm_mul_ps(_mm_mul_ps(r2_, r2inv_), r2inv_);
             //__m128 r2inv_ = _mm_mul_ps(_mm_mul_ps(half_, r2inv_), _mm_sub_ps(three_, top_));
             // Accurate inverse square root
-            __m128 r2inv_ = _mm_div_ps(one_, _mm_sqrt_ps(r2_));
+            //__m128 r2inv_ = _mm_div_ps(one_, _mm_sqrt_ps(r2_));
             // r6inv
             __m128 r6inv_ = _mm_mul_ps(_mm_mul_ps(r2inv_, r2inv_), r2inv_);
             // s fin

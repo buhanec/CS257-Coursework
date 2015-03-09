@@ -33,20 +33,16 @@ void compute() {
 
     // Loop 0.
     t0 = wtime();
+    /*
     for (i = 0; i < V; i += 4) {
         _mm_store_ps(ax+i, zero_);
     }
     for (i = 0; i < V; i += 4) {
-        ay[i] = 0;
-        ay[i+1] = 0;
-        ay[i+2] = 0;
-        ay[i+3] = 0;
-        //_mm_store_ps(ay+i, zero_);
+        _mm_store_ps(ay+i, zero_);
     }
     for (i = 0; i < V; i += 4) {
         _mm_store_ps(az+i, zero_);
     }
-    /*
     for (; i < N; i++) {
         _mm_store_ss(ax+i, zero_);
         _mm_store_ss(ay+i, zero_);
@@ -113,18 +109,12 @@ void compute() {
                    sz_ = _mm_add_ps(mz_, sz_);
 
         }
-        //__m128 ax_ = _mm_load1_ps(ax+i);
-        //__m128 ay_ = _mm_load1_ps(ay+i);
-        //__m128 az_ = _mm_load1_ps(az+i);
         __m128 sx1_ = _mm_add_ps(sx_, _mm_movehl_ps(sx_, sx_));
         __m128 sx2_ = _mm_add_ps(sx1_, _mm_shuffle_ps(sx1_, sx1_, 1));
         __m128 sy1_ = _mm_add_ps(sy_, _mm_movehl_ps(sy_, sy_));
         __m128 sy2_ = _mm_add_ps(sy1_, _mm_shuffle_ps(sy1_, sy1_, 1));
         __m128 sz1_ = _mm_add_ps(sz_, _mm_movehl_ps(sz_, sz_));
         __m128 sz2_ = _mm_add_ps(sz1_, _mm_shuffle_ps(sz1_, sz1_, 1));
-        //_mm_store_ss(ax+i, _mm_add_ss(ax_, sx2_));
-        //_mm_store_ss(ay+i, _mm_add_ss(ay_, sy2_));
-        //_mm_store_ss(az+i, _mm_add_ss(az_, sz2_));
         _mm_store_ss(ax+i, sx2_);
         _mm_store_ss(ay+i, sy2_);
         _mm_store_ss(az+i, sz2_);
@@ -148,45 +138,18 @@ void compute() {
     t1 = wtime();
     l1 += (t1 - t0);
 
-    // Loop 2.
+
+    // Loop 3.
     t0 = wtime();
     for (i = 0; i < V; i += 4) {
         __m128 ax_ = _mm_load_ps(ax+i);
         __m128 vx_ = _mm_load_ps(vx+i);
         __m128 mult_ = _mm_mul_ps(dmp_, _mm_mul_ps(dt_, ax_));
-        __m128 add_ = _mm_add_ps(vx_, mult_);
-        _mm_store_ps(vx+i, add_);
-    }
-    for (i = 0; i < V; i += 4) {
-        __m128 ax_ = _mm_load_ps(ay+i);
-        __m128 vx_ = _mm_load_ps(vy+i);
-        __m128 mult_ = _mm_mul_ps(dmp_, _mm_mul_ps(dt_, ax_));
-        __m128 add_ = _mm_add_ps(vx_, mult_);
-        _mm_store_ps(vy+i, add_);
-    }
-    for (i = 0; i < V; i += 4) {
-        __m128 ax_ = _mm_load_ps(az+i);
-        __m128 vx_ = _mm_load_ps(vz+i);
-        __m128 mult_ = _mm_mul_ps(dmp_, _mm_mul_ps(dt_, ax_));
-        __m128 add_ = _mm_add_ps(vx_, mult_);
-        _mm_store_ps(vz+i, add_);
-    }
-    for (; i < N; i++) {
-        vx[i] += dmp * (dt * ax[i]);
-        vy[i] += dmp * (dt * ay[i]);
-        vz[i] += dmp * (dt * az[i]);
-    }
+        vx_ = _mm_add_ps(vx_, mult_);
 
-    t1 = wtime();
-    l2 += (t1 - t0);
-
-    // Loop 3.
-    t0 = wtime();
-    for (i = 0; i < V; i += 4) {
         __m128 x_ = _mm_load_ps(x+i);
-        __m128 vx_ = _mm_load_ps(vx+i);
 
-        __m128 mult_ = _mm_mul_ps(dt_, vx_);
+        mult_ = _mm_mul_ps(dt_, vx_);
         x_ = _mm_add_ps(x_, mult_);
         _mm_store_ps(x+i, x_);
 
@@ -198,10 +161,14 @@ void compute() {
         _mm_store_ps(vx+i, invx_);
     }
     for (i = 0; i < V; i += 4) {
-        __m128 x_ = _mm_load_ps(y+i);
+        __m128 ax_ = _mm_load_ps(ay+i);
         __m128 vx_ = _mm_load_ps(vy+i);
+        __m128 mult_ = _mm_mul_ps(dmp_, _mm_mul_ps(dt_, ax_));
+        vx_ = _mm_add_ps(vx_, mult_);
 
-        __m128 mult_ = _mm_mul_ps(dt_, vx_);
+        __m128 x_ = _mm_load_ps(y+i);
+
+        mult_ = _mm_mul_ps(dt_, vx_);
         x_ = _mm_add_ps(x_, mult_);
         _mm_store_ps(y+i, x_);
 
@@ -213,10 +180,14 @@ void compute() {
         _mm_store_ps(vy+i, invx_);
     }
     for (i = 0; i < V; i += 4) {
-        __m128 x_ = _mm_load_ps(z+i);
+        __m128 ax_ = _mm_load_ps(az+i);
         __m128 vx_ = _mm_load_ps(vz+i);
+        __m128 mult_ = _mm_mul_ps(dmp_, _mm_mul_ps(dt_, ax_));
+        vx_ = _mm_add_ps(vx_, mult_);
 
-        __m128 mult_ = _mm_mul_ps(dt_, vx_);
+        __m128 x_ = _mm_load_ps(z+i);
+
+        mult_ = _mm_mul_ps(dt_, vx_);
         x_ = _mm_add_ps(x_, mult_);
         _mm_store_ps(z+i, x_);
 
@@ -228,6 +199,9 @@ void compute() {
         _mm_store_ps(vz+i, invx_);
     }
     for (; i < N; i++) {
+        vx[i] += dmp * (dt * ax[i]);
+        vy[i] += dmp * (dt * ay[i]);
+        vz[i] += dmp * (dt * az[i]);
         x[i] += dt * vx[i];
         y[i] += dt * vy[i];
         z[i] += dt * vz[i];

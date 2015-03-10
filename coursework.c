@@ -28,28 +28,18 @@ void compute() {
     // Loop 1.
     t0 = wtime();
     for (int i = 0; i < N; i++) {
-        float xi = x[i];
-        float yi = y[i];
-        float zi = z[i];
-        float sx = 0.0f;
-        float sy = 0.0f;
-        float sz = 0.0f;
-        #pragma unroll (4)
         for (int j = 0; j < N; j++) {
-            float rx = x[j] - xi;
-            float ry = y[j] - yi;
-            float rz = z[j] - zi;
+            float rx = x[j] - x[i];
+            float ry = y[j] - y[i];
+            float rz = z[j] - z[i];
             float r2 = rx*rx + ry*ry + rz*rz + eps;
             float r2inv = 1.0f / sqrt(r2);
             float r6inv = r2inv * r2inv * r2inv;
             float s = m[j] * r6inv;
-            sx += s * rx;
-            sy += s * ry;
-            sz += s * rz;
+            ax[i] += s * rx;
+            ay[i] += s * ry;
+            az[i] += s * rz;
         }
-        ax[i] = sx;
-        ay[i] = sy;
-        az[i] = sz;
     }
     t1 = wtime();
     l1 += (t1 - t0);

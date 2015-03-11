@@ -31,7 +31,7 @@ void compute() {
 
     // Loop 1 (and 0)
     t0 = wtime();
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (i = 0; i < N; i++) {
         // prep x
         __m128 xi_ = _mm_load1_ps(x+i);
@@ -69,14 +69,10 @@ void compute() {
             // Newton-Raphson step - source of error
             //__m128 top_ = _mm_mul_ps(_mm_mul_ps(r2_, r2inv_), r2inv_);
             //__m128 r2inv_ = _mm_mul_ps(_mm_mul_ps(half_, r2inv_), _mm_sub_ps(three_, top_));
-            // Accurate inverse square root
-            //__m128 r2inv_ = _mm_div_ps(one_, _mm_sqrt_ps(r2_));
             // r6inv
             __m128 r6inv_ = _mm_mul_ps(_mm_mul_ps(r2inv_, r2inv_), r2inv_);
             // s fin
                    s_  = _mm_mul_ps(s_, r6inv_);
-            // Directly calculate velocity - source of error
-            //       s_  = _mm_mul_ps(factor_, s_);
             // Calculate results
             __m128 mx_ = _mm_mul_ps(s_, rx_);
                    sx_ = _mm_add_ps(mx_, sx_);
@@ -85,8 +81,8 @@ void compute() {
             __m128 mz_ = _mm_mul_ps(s_, rz_);
                    sz_ = _mm_add_ps(mz_, sz_);
         }
-        // cleaup loop
-        for (; j < N; j ++) {
+        // cleanup loop
+        for (; j < N; j++) {
             // rx/x2
             __m128 rx_ = _mm_load_ss(x+j);
                    rx_ = _mm_sub_ss(rx_, xi_);
@@ -112,14 +108,10 @@ void compute() {
             // Newton-Raphson step - source of error
             //__m128 top_ = _mm_mul_ss(_mm_mul_ss(r2_, r2inv_), r2inv_);
             //__m128 r2inv_ = _mm_mul_ss(_mm_mul_ss(half_, r2inv_), _mm_sub_ss(three_, top_));
-            // Accurate inverse square root
-            //__m128 r2inv_ = _mm_div_ss(one_, _mm_sqrt_ss(r2_));
             // r6inv
             __m128 r6inv_ = _mm_mul_ss(_mm_mul_ss(r2inv_, r2inv_), r2inv_);
             // s fin
                    s_  = _mm_mul_ss(s_, r6inv_);
-            // Directly calculate velocity - source of error
-            //       s_  = _mm_mul_ps(factor_, s_);
             // Calculate results
             __m128 mx_ = _mm_mul_ss(s_, rx_);
                    sx_ = _mm_add_ss(mx_, sx_);
@@ -129,18 +121,12 @@ void compute() {
                    sz_ = _mm_add_ss(mz_, sz_);
         }
         // Horizontal sum - source of error
-        //__m128 vx_  = _mm_load1_ps(vx+i);
-        //       sx_  = _mm_add_ps(sx_, vx_);
         __m128 sx1_ = _mm_add_ps(sx_, _mm_movehl_ps(sx_, sx_));
         __m128 sx2_ = _mm_add_ps(sx1_, _mm_shuffle_ps(sx1_, sx1_, 1));
         _mm_store_ss(ax+i, sx2_);
-        //__m128 vy_  = _mm_load1_ps(vy+i);
-        //       sy_  = _mm_add_ps(sy_, vy_);
         __m128 sy1_ = _mm_add_ps(sy_, _mm_movehl_ps(sy_, sy_));
         __m128 sy2_ = _mm_add_ps(sy1_, _mm_shuffle_ps(sy1_, sy1_, 1));
         _mm_store_ss(ay+i, sy2_);
-        //__m128 vz_  = _mm_load1_ps(vz+i);
-        //       sz_  = _mm_add_ps(sz_, vz_);
         __m128 sz1_ = _mm_add_ps(sz_, _mm_movehl_ps(sz_, sz_));
         __m128 sz2_ = _mm_add_ps(sz1_, _mm_shuffle_ps(sz1_, sz1_, 1));
         _mm_store_ss(az+i, sz2_);

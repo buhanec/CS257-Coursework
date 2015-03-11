@@ -15,16 +15,16 @@ void compute() {
     int i, j;
 
     // Packed preponderationing
-    __m128 dmp_ = _mm_load1_ps(&dmp);
-    __m128 dt_ = _mm_load1_ps(&dt);
-    __m128 eps_ = _mm_load1_ps(&eps);
-    __m128 factor_ = _mm_mul_ps(dmp_, dt_);
-    __m128 zero_ = _mm_setzero_ps();
-    __m128 negzero_ = _mm_set1_ps(-0.0f);
-    __m128 one_ = _mm_set1_ps(1.0f);
-    __m128 negone_ = _mm_set1_ps(-1.0f);
-    __m128 half_ = _mm_set1_ps(0.5f);
-    __m128 three_ = _mm_set1_ps(3.0f);
+    const __m128 dmp_     = _mm_load1_ps(&dmp);
+    const __m128 dt_      = _mm_load1_ps(&dt);
+    const __m128 eps_     = _mm_load1_ps(&eps);
+    const __m128 factor_  = _mm_mul_ps(dmp_, dt_);
+    const __m128 zero_    = _mm_setzero_ps();
+    const __m128 negzero_ = _mm_set1_ps(-0.0f);
+    const __m128 one_     = _mm_set1_ps(1.0f);
+    const __m128 negone_  = _mm_set1_ps(-1.0f);
+    const __m128 half_    = _mm_set1_ps(0.5f);
+    const __m128 three_   = _mm_set1_ps(3.0f);
 
     // Timers
     double t0, t1;
@@ -118,8 +118,6 @@ void compute() {
             __m128 r6inv_ = _mm_mul_ss(_mm_mul_ss(r2inv_, r2inv_), r2inv_);
             // s fin
                    s_  = _mm_mul_ss(s_, r6inv_);
-            // Directly calculate velocity - source of error
-            //       s_  = _mm_mul_ps(factor_, s_);
             // Calculate results
             __m128 mx_ = _mm_mul_ss(s_, rx_);
                    sx_ = _mm_add_ss(mx_, sx_);
@@ -129,18 +127,12 @@ void compute() {
                    sz_ = _mm_add_ss(mz_, sz_);
         }
         // Horizontal sum - source of error
-        //__m128 vx_  = _mm_load1_ps(vx+i);
-        //       sx_  = _mm_add_ps(sx_, vx_);
         __m128 sx1_ = _mm_add_ps(sx_, _mm_movehl_ps(sx_, sx_));
         __m128 sx2_ = _mm_add_ps(sx1_, _mm_shuffle_ps(sx1_, sx1_, 1));
         _mm_store_ss(ax+i, sx2_);
-        //__m128 vy_  = _mm_load1_ps(vy+i);
-        //       sy_  = _mm_add_ps(sy_, vy_);
         __m128 sy1_ = _mm_add_ps(sy_, _mm_movehl_ps(sy_, sy_));
         __m128 sy2_ = _mm_add_ps(sy1_, _mm_shuffle_ps(sy1_, sy1_, 1));
         _mm_store_ss(ay+i, sy2_);
-        //__m128 vz_  = _mm_load1_ps(vz+i);
-        //       sz_  = _mm_add_ps(sz_, vz_);
         __m128 sz1_ = _mm_add_ps(sz_, _mm_movehl_ps(sz_, sz_));
         __m128 sz2_ = _mm_add_ps(sz1_, _mm_shuffle_ps(sz1_, sz1_, 1));
         _mm_store_ss(az+i, sz2_);
